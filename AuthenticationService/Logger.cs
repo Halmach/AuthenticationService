@@ -6,26 +6,24 @@ namespace AuthenticationService
 {
     public class Logger: ILogger
     {
-        
-        public async Task WriteEvent(string eventMessage)
-        {  
+        private async Task AppendLogToFile(string message,string fileName)
+        {
             if (!Directory.Exists(Directory.GetCurrentDirectory() + "\\Logs"))
                 Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\Logs");
 
-            string logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Logs", "events.txt");
+            string logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Logs", fileName);
 
-            await File.AppendAllTextAsync(logFilePath, eventMessage + Environment.NewLine);
+            await File.AppendAllTextAsync(logFilePath, message + Environment.NewLine);
+        }
+        public async Task WriteEvent(string eventMessage)
+        {
+            await AppendLogToFile(eventMessage, "events.txt");
             Console.WriteLine(eventMessage);
         }
 
         public async Task WriteError(string errorMessage)
         {
-            if (!Directory.Exists(Directory.GetCurrentDirectory() + "\\Logs"))
-                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\Logs");
-
-            string errorFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Logs", "errors.txt");
-
-            await File.AppendAllTextAsync(errorFilePath, errorMessage + Environment.NewLine);
+            await AppendLogToFile(errorMessage, "errors.txt");
             Console.WriteLine(errorMessage);
         }
     }
