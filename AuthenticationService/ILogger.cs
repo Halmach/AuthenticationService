@@ -4,7 +4,7 @@ namespace AuthenticationService
 {
     public interface ILogger
     {
-        public  Task WriteEvent(string eventMessage);
-        public Task WriteError(string errorMessage);  
+        public void WriteEvent(string eventMessage);
+        public void WriteError(string errorMessage);  
     }
 }

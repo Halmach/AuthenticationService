@@ -1,30 +1,56 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AuthenticationService
 {
     public class Logger: ILogger
     {
-        private async Task AppendLogToFile(string message,string fileName)
-        {
-            if (!Directory.Exists(Directory.GetCurrentDirectory() + "\\Logs"))
-                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\Logs");
+        private ReaderWriterLockSlim lock_ = new ReaderWriterLockSlim();
 
-            string logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Logs", fileName);
+        private string logDirectory { get; set; }
 
-            await File.AppendAllTextAsync(logFilePath, message + Environment.NewLine);
-        }
-        public async Task WriteEvent(string eventMessage)
+        public Logger()
         {
-            await AppendLogToFile(eventMessage, "events.txt");
-            Console.WriteLine(eventMessage);
+            logDirectory = AppDomain.CurrentDomain.BaseDirectory + @"/_logs/" + DateTime.Now.ToString("dd-MM-yy HH-mm-ss") + @"/";
+
+            if (!Directory.Exists(logDirectory))
+                Directory.CreateDirectory(logDirectory);
         }
 
-        public async Task WriteError(string errorMessage)
+        public void WriteEvent(string eventMessage)
         {
-            await AppendLogToFile(errorMessage, "errors.txt");
-            Console.WriteLine(errorMessage);
+            lock_.EnterWriteLock();
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(logDirectory + "events.txt", append: true))
+                {
+                    writer.WriteLine(eventMessage);
+                }
+            }
+            finally
+            {
+                lock_.ExitWriteLock();
+            }
+
+        }
+
+        public void WriteError(string errorMessage)
+        {
+            lock_.EnterWriteLock();
+            try
+            {
+                using (StreamWriter writer = new StreamWriter("errors.txt", append: true))
+                {
+                    writer.WriteLine(errorMessage);
+                }
+            }
+            finally
+            {
+                lock_.ExitWriteLock();
+            }
+
         }
     }
 }
