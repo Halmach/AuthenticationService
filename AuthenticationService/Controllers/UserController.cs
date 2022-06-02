@@ -58,7 +58,8 @@ namespace AuthenticationService.Controllers
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login)
+                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.Name)
             };
 
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
@@ -72,7 +73,7 @@ namespace AuthenticationService.Controllers
             return _mapper.Map<UserViewModel>(user);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Администратор")]
         [HttpGet]
         [Route("viewmodel")]
         public UserViewModel GetUserViewModel()
